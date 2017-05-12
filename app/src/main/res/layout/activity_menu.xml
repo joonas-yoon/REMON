@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.remon.StartPages.MenuActivity"
+    android:layout_marginTop="5dp"
+    >
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/message_textView"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginRight="10dp"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="3"
+        android:layout_below="@+id/message_textView">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <Button
+                android:text="Button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_info"
+                android:layout_weight="1"/>
+
+            <Button
+                android:text="Button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_ambul"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <Button
+                android:text="Button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_m119"
+                android:layout_weight="1"/>
+
+            <Button
+                android:text="Button"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_med_search"
+                android:layout_weight="1"
+                android:layout_width="match_parent"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <Button
+                android:text="Button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_c119"
+                android:layout_weight="1"/>
+
+            <Button
+                android:text="Button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_mEmerg"
+                android:layout_weight="1"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
