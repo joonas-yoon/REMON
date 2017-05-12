@@ -12,8 +12,8 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextClock;
 
-import com.remon.MainActivity;
 import com.remon.R;
+import com.remon.StartPages.MenuActivity;
 
 import java.util.Date;
 import java.util.Locale;
@@ -127,7 +127,7 @@ public class LockScreenActivity extends AppCompatActivity {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     imgBtn.setAlpha(0.5f);
                     return true;
-                } else if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     runApplication();
                     return true;
                 } else {
@@ -140,7 +140,7 @@ public class LockScreenActivity extends AppCompatActivity {
 
     public void runApplication(){
         // TODO: API level 16
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
         startActivity(intent);
     }
 

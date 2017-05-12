@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.remon.MainActivity;
-
 public class LockScreenReceiver extends BroadcastReceiver {
 
     private KeyguardManager km = null;
