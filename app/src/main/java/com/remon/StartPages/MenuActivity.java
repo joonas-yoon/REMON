@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.remon.LockScreen.LockScreenService;
 import com.remon.MenuSelectedPages.InfoActivity;
 import com.remon.MenuSelectedPages.MapActivity;
 import com.remon.MenuSelectedPages.Medical_SearchActivity;
@@ -18,6 +19,8 @@ public class MenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+
+        startService(new Intent(this, LockScreenService.class));
 
         Button mbtn_Info = (Button)findViewById(R.id.btn_info); //사용자 정보
         Button mbtn_ambul = (Button)findViewById(R.id.btn_ambul); //응급실 정보
