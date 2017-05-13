@@ -30,6 +30,7 @@ public class SendMessage {
     ArrayList<EmergencyroomInfo> result_list;
     public SendMessage(Context cont, String type, String address, String hospital, ArrayList<EmergencyroomInfo> result)
     {
+        Log.d("called by MapActivity", "Hello~");
         context = cont;
         message_type = type;
         addr = address;
@@ -54,9 +55,9 @@ public class SendMessage {
         SendMMS();
     }
 
-
     private void SendMMS()
     {
+
         //manifests에 정의된 authority가 두 번째 인자. xml폴더에 file_path참조할 것. 참조 사이트:http://kit-lab.hatenablog.jp/entry/2017/01/08/011428#これからは-contentURI
         Uri uri = FileProvider.getUriForFile(context, "com.remon.fileprovider",
                 new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/DCIM/Camera/"+fileName));

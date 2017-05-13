@@ -12,65 +12,65 @@
         />
 
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/InfoLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/InfoLayout"
-        android:layout_below="@+id/map">
+        android:layout_below="@+id/map"
+        android:orientation="vertical"
+        android:padding="5dp">
 
         <TextView
-            android:text="TextView"
+            android:id="@+id/address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/address"
-            android:layout_below="@+id/map"
             android:layout_alignParentStart="true"
-            android:layout_marginTop="4dp" />
+            android:layout_below="@+id/map"
+            android:layout_marginTop="4dp"
+            android:text="TextView" />
 
         <LinearLayout
-            android:orientation="horizontal"
+            android:id="@+id/inputLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/inputLayout">
+            android:orientation="horizontal">
 
             <EditText
+                android:id="@+id/editSearch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:hint="입력"
-                android:ems="10"
                 android:layout_above="@+id/ListLayout"
                 android:layout_toStartOf="@+id/screenshot"
-                android:id="@+id/editSearch"
                 android:layout_weight="1"
-                />
+                android:ems="10"
+                android:hint="입력"
+                android:inputType="text" />
 
             <Button
-                android:text="Caputre"
+                android:id="@+id/screenshot"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/screenshot"
                 android:layout_alignBaseline="@+id/address"
                 android:layout_alignBottom="@+id/address"
                 android:layout_alignParentEnd="true"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:text="Caputre" />
 
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/ListLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/ListLayout"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/InfoLayout">
+        android:layout_alignParentBottom="false"
+        android:layout_alignParentStart="false"
+        android:layout_below="@+id/InfoLayout"
+        android:padding="10dp">
 
         <ListView
+            android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/list" />
+            android:layout_height="match_parent" />
     </LinearLayout>
 
 

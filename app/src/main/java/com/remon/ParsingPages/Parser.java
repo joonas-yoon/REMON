@@ -221,7 +221,7 @@ public class Parser {
                 }
                 String desc = addr + "\n거리 : " + String.format("%.2f", Double.parseDouble(distance)) + "Km";
                 Marker location = mMap.addMarker(new MarkerOptions().position(point).title(medical_name).snippet(snippet).icon(bitmapDescriptor));
-                adapter.addItem(medical_name, desc, location);
+                adapter.addItem(medical_name, desc, location, tel);
             }
             adapter.notifyDataSetChanged();
         }
@@ -265,7 +265,7 @@ public class Parser {
 
                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
                 Marker location = mMap.addMarker(new MarkerOptions().position(point).title(hospital_name).snippet(snippet).icon(bitmapDescriptor));
-                adapter.addItem(hospital_name, "거리 : " + String.format("%.2f", distance) + "Km   " + emergency_room_state + " | " + patient_room_state + " | " + operation_room_state, location);
+                adapter.addItem(hospital_name, "거리 : " + String.format("%.2f", distance) + "Km  | " + operation_room_state, location, tel);
             }
             adapter.notifyDataSetChanged();
         }

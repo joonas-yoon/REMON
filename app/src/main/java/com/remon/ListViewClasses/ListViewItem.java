@@ -10,6 +10,7 @@ public class ListViewItem {
     private String name;
     private String description;
     private Marker marker;
+    private String phone;
 
     public void setName(String name) {
         this.name = name ;
@@ -20,6 +21,9 @@ public class ListViewItem {
     public void setMarker(Marker marker) {
         this.marker = marker;
     }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     public String getName() {
         return this.name ;
@@ -29,5 +33,8 @@ public class ListViewItem {
     }
     public Marker getMarker() {
         return marker;
+    }
+    public String getPhone() {
+        return phone;
     }
 }
