@@ -39,10 +39,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.remon.EmergencyroomInfo;
 import com.remon.ListViewClasses.ListViewAdapter;
 import com.remon.ListViewClasses.ListViewItem;
-import com.remon.MedicalInfo;
+import com.remon.MedicalClasses.EmergencyroomInfo;
+import com.remon.MedicalClasses.MedicalInfo;
 import com.remon.R;
 import com.remon.SendMessage;
 
@@ -97,7 +97,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
 
     final int MY_PERMISSIONS_EXTERNAL_STORAGE = 1;
     final int MY_PERMISSIONS_ACCESS_FINE_LOCATION =2;
-
+    final int MY_PERMISSIONS_EXTERNAL_STORAGE2 =3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -212,6 +212,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             Toast.makeText(MapActivity.this, "PERMISSION DENIED", Toast.LENGTH_LONG).show();
             finish();
         }
+
+        if(requestCode == MY_PERMISSIONS_EXTERNAL_STORAGE2  && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        {
+            Toast.makeText(MapActivity.this, "PERMISSION GRANTED", Toast.LENGTH_LONG).show();
+        }
+        else if(requestCode == MY_PERMISSIONS_EXTERNAL_STORAGE2  && grantResults[0] == PackageManager.PERMISSION_DENIED)
+        {
+            Toast.makeText(MapActivity.this, "PERMISSION DENIED", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override  //지도 준비되었을 때.
@@ -284,12 +293,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         }
         else if(page_id.equals("m119"))//119일 경우에는 지도를 캡쳐하고 메세지를 보낸다.
         {
+            if(ContextCompat.checkSelfPermission(MapActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED)
+            {//권한 없으면 물어보기
+                ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_EXTERNAL_STORAGE2);
+            }
             SystemClock.sleep(3000); //바로 찍으면 지도가 흐릿함.
             CaptureMapScreen(); //지도 찍기
             new SendMessage(MapActivity.this, "m119", address); //문자 보내기
             finish();
         }
-
 
         listview.setOnItemClickListener(new ListViewClickListener());
 
@@ -613,7 +625,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
 
             /*
             else if(page_id.equals("hospital") || page_id.equals("pharmacy")) {
-
             }*/
 
     }
@@ -797,5 +808,4 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 }
-
 

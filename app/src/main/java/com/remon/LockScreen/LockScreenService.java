@@ -19,6 +19,8 @@ public class LockScreenService extends Service {
         KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         KeyguardManager.KeyguardLock keyLock = km.newKeyguardLock(Context.KEYGUARD_SERVICE);
 
+
+
         // 기본 잠금화면 없애기
         keyLock.disableKeyguard();
 
@@ -26,6 +28,7 @@ public class LockScreenService extends Service {
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_BOOT_COMPLETED);
+
 
         //Set up a receiver to listen for the Intents in this Service
         registerReceiver(receiver, filter);
