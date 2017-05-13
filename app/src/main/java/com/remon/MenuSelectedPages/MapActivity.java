@@ -609,7 +609,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
 
                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
                 Marker location = mMap.addMarker(new MarkerOptions().position(point).title(hospital_name).snippet(snippet).icon(bitmapDescriptor));
-                adapter.addItem(hospital_name, "거리 : " + String.format("%.2f", distance) + "Km   " + emergency_room_state + " | " + patient_room_state + " | " + operation_room_state, location);
+                // 응급실이 가능한 리스트만 추려낸것이기 때문에, 수술실 여부만 출력하도록 한다. (입원실은 무의미하므로 삭제)
+                adapter.addItem(hospital_name, "거리 : " + String.format("%.2f", distance) + "Km  | " + operation_room_state, location, tel);
             }
             adapter.notifyDataSetChanged();
         }
@@ -648,7 +649,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 String desc = addr + "\n거리 : " + String.format("%.2f", Double.parseDouble(distance)) + "Km";
                 Marker location = mMap.addMarker(new MarkerOptions().position(point).title(medical_name).snippet(snippet).icon(bitmapDescriptor));
-                adapter.addItem(medical_name, desc, location);
+                adapter.addItem(medical_name, desc, location, tel);
             }
             adapter.notifyDataSetChanged();
         }
@@ -666,7 +667,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
             addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEmrrmRltmUsefulSckbdInfoInqire?";
-            servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
+//            servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
+            servicekey = "serviceKey=PhfZ9KkQb6y%2FpDBLAL%2B9p2fvX9TbaNmvOxBWBgV33mXzJyEtZCMu0UQSq998%2BoedTo38ANCZvKP2xS1naY8DEQ%3D%3D";
             parameter = add_parameter("STAGE1=%EC%A0%84%EB%9D%BC%EB%B6%81%EB%8F%84");
             addr = addr + servicekey + parameter;
 

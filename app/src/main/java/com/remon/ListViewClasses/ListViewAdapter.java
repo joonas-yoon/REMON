@@ -1,10 +1,13 @@
 package com.remon.ListViewClasses;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.Marker;
@@ -29,7 +32,7 @@ public class ListViewAdapter extends BaseAdapter {
 
     //position에 위치한 데이터를 화면에 출력하는데 사용될 View를 리턴. : 필수 구현
     @Override
-    public View getView(int position, View convertView, ViewGroup parent)
+    public View getView(final int position, View convertView, ViewGroup parent)
     {
         final int pos = position;
         final Context context = parent.getContext();
@@ -48,6 +51,18 @@ public class ListViewAdapter extends BaseAdapter {
         // 아이템 내 각 위젯에 데이터 반영
         nameTextView.setText(listViewItem.getName());
         descTextView.setText(listViewItem.getDescription());
+
+        // 이미지를 클릭하면 전화가 걸리도록 이벤트 연결
+        ImageView callButton = (ImageView) convertView.findViewById(R.id.call_on_item);
+        callButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:"+displayList.get(pos).getPhone()));
+                context.startActivity(intent);
+            }
+        });
+
         return convertView;
     }
 
@@ -62,12 +77,13 @@ public class ListViewAdapter extends BaseAdapter {
     public Object getItem(int position) {
         return displayList.get(position) ;
     }
-    public void addItem(String name, String desc, Marker marker)
+    public void addItem(String name, String desc, Marker marker, String phone)
     {
         ListViewItem item = new ListViewItem();
         item.setName(name);
         item.setDesc(desc);
         item.setMarker(marker);
+        item.setPhone(phone);
         listViewItemList.add(item);
         displayList.add(item);
     }
