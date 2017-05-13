@@ -92,12 +92,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
     ArrayList<HashMap<String, ArrayList<String>>> hospitalList;
     ArrayList result_list;
 
+    int try_count = 0;
+
     String addr,servicekey, parameter; //for parsing address
     //---------------------
 
     final int MY_PERMISSIONS_EXTERNAL_STORAGE = 1;
     final int MY_PERMISSIONS_ACCESS_FINE_LOCATION =2;
     final int MY_PERMISSIONS_EXTERNAL_STORAGE2 =3;
+
+    final int  MAX_TRY = 3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -157,10 +161,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
                 }
-                else if(page_id.equals("mEmerge") || page_id.equals("m119"))
+                /*else if(page_id.equals("mEmerge") || page_id.equals("m119"))
                 {
                     new StartParsing_Ambul().execute(); //background로 parsing
-                }
+                }*/
             }
             else //gps 안켜졌을 경우
             {
@@ -299,6 +303,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         {//병원과 약국찾기는 위치정보를 가지고 파싱을하기 때문에 위치를 찾고난 뒤에 파싱을 한다.
             new StartParsing_MedicalSearch().execute(); //background로 API받아오기
         }
+        else if(page_id.equals("mEmerge") || page_id.equals("m119"))
+        {
+            new StartParsing_Ambul().execute(); //background로 parsing
+        }
 
         listview.setOnItemClickListener(new ListViewClickListener());
 
@@ -378,6 +386,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             latitude = location.getLatitude();   //위도
             mapFragment.getMapAsync(MapActivity.this); //지도 업데이트
             view_address.setText(getAddress(latitude, longitude));
+
+
 
             try { //업데이트 제거
                 mLocationManager.removeUpdates(mLocationListener);
@@ -609,7 +619,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
 
                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
                 Marker location = mMap.addMarker(new MarkerOptions().position(point).title(hospital_name).snippet(snippet).icon(bitmapDescriptor));
-                adapter.addItem(hospital_name, "거리 : " + String.format("%.2f", distance) + "Km   " + emergency_room_state + " | " + patient_room_state + " | " + operation_room_state, location);
+                // 응급실이 가능한 리스트만 추려낸것이기 때문에, 수술실 여부만 출력하도록 한다. (입원실은 무의미하므로 삭제)
+                adapter.addItem(hospital_name, "거리 : " + String.format("%.2f", distance) + "Km  | " + operation_room_state, location, tel);
             }
             adapter.notifyDataSetChanged();
         }
@@ -648,7 +659,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 String desc = addr + "\n거리 : " + String.format("%.2f", Double.parseDouble(distance)) + "Km";
                 Marker location = mMap.addMarker(new MarkerOptions().position(point).title(medical_name).snippet(snippet).icon(bitmapDescriptor));
-                adapter.addItem(medical_name, desc, location);
+                adapter.addItem(medical_name, desc, location, tel);
             }
             adapter.notifyDataSetChanged();
         }
@@ -664,9 +675,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected ArrayList<EmergencyroomInfo> doInBackground(Void... voids)
         {
+            Log.d("StartParsing_Ambul", try_count+"");
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
             addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEmrrmRltmUsefulSckbdInfoInqire?";
-            servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
+
+            servicekey = "serviceKey=PhfZ9KkQb6y%2FpDBLAL%2B9p2fvX9TbaNmvOxBWBgV33mXzJyEtZCMu0UQSq998%2BoedTo38ANCZvKP2xS1naY8DEQ%3D%3D";
+            //servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
             parameter = add_parameter("STAGE1=%EC%A0%84%EB%9D%BC%EB%B6%81%EB%8F%84");
             addr = addr + servicekey + parameter;
 
@@ -698,6 +712,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                 if (hospitalList.get(i).get("hpInfo").size() == 8)
                     accept_oper = hospitalList.get(i).get("hpInfo").get(7);
                 EmergencyroomInfo temp = new EmergencyroomInfo(hospital_name, address, tel, lat, lon, accept_emer, accept_oper, accept_patient);
+                double targetLat = Double.parseDouble(lat);
+                double targetLon = Double.parseDouble(lon);
+                temp.setDistance(CalculationByDistance(new LatLng(latitude, longitude), new LatLng(targetLat, targetLon)));
                 hospital.add(temp);
             }
             result_list = hospital;
@@ -707,51 +724,50 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(ArrayList<EmergencyroomInfo> result)
         {
-            if(page_id.equals("ambul"))
+            if (page_id.equals("ambul")) {
+                if (latitude != 0 && longitude != 0) {
+                    update_list_Ambul(result);
+                } //지도가 먼저 파싱되면 update
+            } else if (page_id.equals("m119"))//119일 경우에는 지도를 캡쳐하고 메세지를 보낸다.
             {
-                if(latitude!=0 && longitude !=0) update_list_Ambul(result); //지도가 먼저 파싱되면 update
-            }
-            else if(page_id.equals("m119"))//119일 경우에는 지도를 캡쳐하고 메세지를 보낸다.
-            {
-                if(latitude!=0 && longitude !=0)
-                {
+
+                if (latitude != 0 && longitude != 0) {
                     if (ContextCompat.checkSelfPermission(MapActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {//권한 없으면 물어보기
                         ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_EXTERNAL_STORAGE2);
-                    }
-
-                    int size = result.size();
-                    for (int i = 0; i < size; i++) {
-                        double lat = Double.parseDouble(result.get(i).getLatitude());
-                        double lon = Double.parseDouble(result.get(i).getLongitude());
-                        LatLng point = new LatLng(lat, lon);
-                        result.get(i).setDistance(CalculationByDistance(new LatLng(latitude, longitude), point));
                     }
                     Collections.sort(result, compare); // 리스트를 거리순으로 정렬
 
                     SystemClock.sleep(4000); //바로 찍으면 지도가 흐릿함.
-
                     CaptureMapScreen(); //지도 찍기
+
                     new SendMessage(MapActivity.this, "m119", getAddress(latitude, longitude), "", result); //문자 보내기
                     finish();
                 }
-            }
-
-            else if(page_id.equals("mEmerge"))
-            {
-                if(latitude!=0 && longitude !=0) //지도가 구해진 상태에서 파싱이 끝나면 캡쳐 하면 된다.
+            } else if (page_id.equals("mEmerge")) {
+                if (latitude != 0 && longitude != 0) //지도가 구해진 상태에서 파싱이 끝나면 캡쳐 하면 된다.
                 {
-                    int size = result.size();
-                    for (int i = 0; i < size; i++) {
-                        double lat = Double.parseDouble(result.get(i).getLatitude());
-                        double lon = Double.parseDouble(result.get(i).getLongitude());
-                        LatLng point = new LatLng(lat, lon);
-                        result.get(i).setDistance(CalculationByDistance(new LatLng(latitude, longitude), point));
+                    if(result.size() == 0) {
+                        try_count++;
+                        if(try_count < MAX_TRY) {
+                            Log.d("try Parsing", "try Parsing...");
+                            new StartParsing_Ambul().execute();
+                        }
+                        else {
+                            Log.d("don't Parsing", "don't Parsing");
+                            Toast.makeText(getBaseContext(), "현재 공공데이터를 가져올 수 업습니다.", Toast.LENGTH_LONG).show();
+                            try_count = 0;
+                            finish();
+                        }
+                        this.cancel(this.getStatus() == Status.RUNNING); //스레드 죽이기
+                        return;
                     }
                     Collections.sort(result, compare); // 리스트를 거리순으로 정렬
                     //화면 이동
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(result.get(0).getLatitude()), Double.parseDouble(result.get(0).getLongitude()))));
                     SystemClock.sleep(4000); //바로 찍으면 지도가 흐릿함.
                     CaptureMapScreen(); //지도 찍기
+
+                    try_count = 0;
                     new SendMessage(
                             MapActivity.this, "mEmerge",
                             getAddress(
@@ -778,6 +794,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             if(page_id.equals("hospital")) //병원일 때
             {
                 addr = "http://openapi.jeonju.go.kr/rest/medicalnew/getMedicalDistancelList?serviceKey=";
+                //servicekey = "PhfZ9KkQb6y%2FpDBLAL%2B9p2fvX9TbaNmvOxBWBgV33mXzJyEtZCMu0UQSq998%2BoedTo38ANCZvKP2xS1naY8DEQ%3D%3D";
                 servicekey = "z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
                 parameter = "&numOfRows=999&pageSize=100&pageNo=1&startPage=1&posy=" + latitude + "&posx=" + longitude + "&searchDts=10";
                 addr = addr + servicekey + parameter;
