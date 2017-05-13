@@ -9,7 +9,10 @@ import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.remon.MedicalClasses.EmergencyroomInfo;
+
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Created by lg on 2017-05-13.
@@ -17,17 +20,21 @@ import java.io.File;
 
 public class SendMessage {
 
+    final int MAX_NEAREST = 5;
     String mName, mAge, mDis, mMed, mP1, mBlood;
     final String fileName = "MyLocation.jpg";
     Context context;
     String message_type;
     String addr;
-    public SendMessage(Context cont, String type, String address)
+    String hospitalName;
+    ArrayList<EmergencyroomInfo> result_list;
+    public SendMessage(Context cont, String type, String address, String hospital, ArrayList<EmergencyroomInfo> result)
     {
         context = cont;
         message_type = type;
         addr = address;
-
+        hospitalName= hospital;
+        result_list = result;
         //SharedPreferences을 통해 데이터를 사용
         SharedPreferences pref = context.getSharedPreferences("pref",0);
         String nametext= pref.getString("name",null);
@@ -35,7 +42,7 @@ public class SendMessage {
         String distext=pref.getString("dis",null);
         String medtext=pref.getString("med",null);
         String btext=pref.getString("blood",null);
-        String p1text=pref.getString("p1",null);
+        String p1text=pref.getString("POC1",null);
 
         //키값이 널인지 아닌지 확인 널이 아닐때 string 변수에 넣어 사용
         if(nametext!=null) mName =nametext+"";
@@ -58,11 +65,33 @@ public class SendMessage {
         if(message_type.compareTo("m119")==0)
         { //119신고일 경우
             intent.putExtra("address", "119");
-            intent.putExtra("sms_body", "이름 : "+mName+'\n'+"나이 : "+mAge+'\n'+"혈액형 : "+mBlood+'\n'+"의학적 질환 및 알레르기 : "+mDis+'\n'+"복용중인 약 : "+mMed+'\n'+"인 환자가 위급합니다"+addr+" 위치로 긴급출동 바랍니다!");
+            String message = "[환자의 정보]\n\n" +
+                    "이름 : " + mName + "\n" +
+                    "\n나이 : " + mAge + "\n" +
+                    "\n혈액형 : " + mBlood + "\n" +
+                    "\n의학적 질환 및 알레르기 : " + mDis + "\n" +
+                    "\n복용중인 약 : " + mMed + "\n\n" +
+                    "[응급 환자 위치]\n\n" +
+                    "환자의 위치 : " + addr + "\n\n" +
+                    "[수용 가능한 응급실]\n\n";
+
+            for(int i=0; i<MAX_NEAREST; i++) {
+                double distance = result_list.get(i).getDistance();
+                String hospital_name = result_list.get(i).getHospitalName();
+                String hospital_addr = result_list.get(i).getAddress();
+                String tel = result_list.get(i).getTelNum();
+                message += (i+1) + ". [병원 이름 : " + hospital_name + "]\n";
+                message += "\n병원 주소 : " + hospital_addr + "\n";
+                message += "\n병원 전화번호 : " + tel + "\n";
+                message += "\n환자와 병원과의 거리 : " + String.format("%.2f", distance) + "Km" + "\n\n";
+            }
+            intent.putExtra("sms_body", message);
         }
 
         else if (message_type.compareTo("mEmerge")==0)
         { //비상연락망
+            intent.putExtra("address", mP1);
+            intent.putExtra("sms_body", "비상연락망에 적혀있는 연락처로 연락드립니다. 현재 "+ mName +"님 께서 " + hospitalName + "[" + addr + "] 에 위치한 병원에 입원하였습니다.");
 
         }
 
@@ -79,5 +108,4 @@ public class SendMessage {
         }
 
     }
-
 }
