@@ -65,8 +65,8 @@ public class SendMessage {
         if(message_type.compareTo("m119")==0)
         { //119신고일 경우
             intent.putExtra("address", "119");
-            String message = "[환자의 정보]\n\n" +
-                    "이름 : " + mName + "\n" +
+            String message = "[환자의 정보]\n" +
+                    "\n이름 : " + mName + "\n" +
                     "\n나이 : " + mAge + "\n" +
                     "\n혈액형 : " + mBlood + "\n" +
                     "\n의학적 질환 및 알레르기 : " + mDis + "\n" +
@@ -80,19 +80,25 @@ public class SendMessage {
                 String hospital_name = result_list.get(i).getHospitalName();
                 String hospital_addr = result_list.get(i).getAddress();
                 String tel = result_list.get(i).getTelNum();
-                message += (i+1) + ". [병원 이름 : " + hospital_name + "]\n";
-                message += "\n병원 주소 : " + hospital_addr + "\n";
-                message += "\n병원 전화번호 : " + tel + "\n";
-                message += "\n환자와 병원과의 거리 : " + String.format("%.2f", distance) + "Km" + "\n\n";
+                message += "#" + (i+1) + ". " + hospital_name + "\n";
+                message += "병원 주소 : " + hospital_addr + "\n";
+                message += "병원 전화번호 : " + tel + "\n";
+                message += "환자와 병원과의 거리 : " + String.format("%.2f", distance) + "Km" + "\n";
+                message += "https://maps.google.com/?q=" + result_list.get(i).getLatitude() + "," + result_list.get(i).getLongitude() +"\n\n";
             }
             intent.putExtra("sms_body", message);
         }
 
         else if (message_type.compareTo("mEmerge")==0)
-        { //비상연락망
+        {
+            //비상연락망
             intent.putExtra("address", mP1);
-            intent.putExtra("sms_body", "비상연락망에 적혀있는 연락처로 연락드립니다. 현재 "+ mName +"님 께서 " + hospitalName + "[" + addr + "] 에 위치한 병원에 입원하였습니다.");
-
+            String message = "비상연락망에 적혀있는 연락처로 연락드립니다.\n";
+            message += "현재 "+ mName +"님이 입원하였습니다.\n";
+            message += "(병원명) " + hospitalName + "\n";
+            message += "(위치) " + addr +"\n";
+            message += "(오시는 길) https://maps.google.com/?q=" + result_list.get(0).getLatitude() + "," + result_list.get(0).getLongitude() +"\n";
+            intent.putExtra("sms_body", message);
         }
 
         intent.addCategory("android.intent.category.DEFAULT");

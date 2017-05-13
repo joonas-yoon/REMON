@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -106,9 +107,13 @@ public class InfoActivity extends AppCompatActivity {
         mRelation1_Spinner.setSelection(relation1spinner_index);
         mRelation2_Spinner.setSelection(relation2spinner_index);
         try {
-            Uri uri = FileProvider.getUriForFile(InfoActivity.this, "com.remon.fileprovider",
-                    new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/Camera/" + fileName));
-            pict_btn.setImageURI(uri);
+            File imageFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/Camera/" + fileName);
+            Uri uri = FileProvider.getUriForFile(InfoActivity.this, "com.remon.fileprovider", imageFile);
+            if( imageFile == null || ! imageFile.exists() ){
+                pict_btn.setImageResource(R.drawable.add4);
+            } else {
+                pict_btn.setImageURI(uri);
+            }
         } catch(Exception e) {
             Log.d("FileStreamError", e.getMessage());
         }
