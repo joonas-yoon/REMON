@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 
+import com.remon.LockScreen.LockScreenService;
 import com.remon.R;
 
 public class StartLoadingActivity extends AppCompatActivity {
@@ -13,6 +14,8 @@ public class StartLoadingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_loading);
+
+        startService(new Intent(this, LockScreenService.class));
 
         Handler x = new Handler();
         x.postDelayed(new Runnable() {

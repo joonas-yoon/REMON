@@ -35,6 +35,8 @@ public class LockScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen);
 
+        Log.d("test_lock2", "check");
+
         makeFullScreen();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 

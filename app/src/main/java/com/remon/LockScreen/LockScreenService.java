@@ -1,14 +1,13 @@
 package com.remon.LockScreen;
 
 import android.app.KeyguardManager;
-import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
+import android.util.Log;
 
 public class LockScreenService extends Service {
 
@@ -16,6 +15,7 @@ public class LockScreenService extends Service {
 
     @Override
     public void onCreate() {
+        Log.d("test_lock1", "check");
         KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         KeyguardManager.KeyguardLock keyLock = km.newKeyguardLock(Context.KEYGUARD_SERVICE);
 

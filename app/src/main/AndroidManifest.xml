@@ -28,7 +28,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"/>
 
-        <activity android:name=".StartPages.MenuActivity">
+        <activity android:name=".StartPages.StartLoadingActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -36,25 +36,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".MenuSelectedPages.InfoActivity"
-                  android:windowSoftInputMode="stateAlwaysHidden">
-        </activity>
-        <activity android:name=".MenuSelectedPages.Medical_SearchActivity">
-        </activity>
+                  android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:name=".StartPages.MenuActivity"/>
+        <activity android:name=".MenuSelectedPages.Medical_SearchActivity"/>
         <activity android:name=".MenuSelectedPages.MapActivity"
-                  android:windowSoftInputMode="stateAlwaysHidden">
-        </activity>
-        <activity android:name=".StartPages.MenuActivity">
-        </activity>
+                  android:windowSoftInputMode="stateAlwaysHidden"/>
 
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.remon.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
+        <activity android:name=".LockScreen.LockScreenActivity" />
 
         <receiver
             android:name=".LockScreen.LockScreenReceiver"
@@ -68,6 +56,15 @@
             android:name=".LockScreen.LockScreenService"
             android:enabled="true" />
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.remon.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>
