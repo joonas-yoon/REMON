@@ -92,12 +92,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
     ArrayList<HashMap<String, ArrayList<String>>> hospitalList;
     ArrayList result_list;
 
+    int try_count = 0;
+
     String addr,servicekey, parameter; //for parsing address
     //---------------------
 
     final int MY_PERMISSIONS_EXTERNAL_STORAGE = 1;
     final int MY_PERMISSIONS_ACCESS_FINE_LOCATION =2;
     final int MY_PERMISSIONS_EXTERNAL_STORAGE2 =3;
+
+    final int  MAX_TRY = 3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -384,6 +388,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             mapFragment.getMapAsync(MapActivity.this); //지도 업데이트
             view_address.setText(getAddress(latitude, longitude));
 
+
+
             try { //업데이트 제거
                 mLocationManager.removeUpdates(mLocationListener);
             } catch (SecurityException e) {
@@ -669,9 +675,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected ArrayList<EmergencyroomInfo> doInBackground(Void... voids)
         {
+            Log.d("StartParsing_Ambul", try_count+"");
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
             addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEmrrmRltmUsefulSckbdInfoInqire?";
-            servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
+
+            servicekey = "serviceKey=PhfZ9KkQb6y%2FpDBLAL%2B9p2fvX9TbaNmvOxBWBgV33mXzJyEtZCMu0UQSq998%2BoedTo38ANCZvKP2xS1naY8DEQ%3D%3D";
+            //servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
             parameter = add_parameter("STAGE1=%EC%A0%84%EB%9D%BC%EB%B6%81%EB%8F%84");
             addr = addr + servicekey + parameter;
 
@@ -737,14 +746,32 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             } else if (page_id.equals("mEmerge")) {
                 if (latitude != 0 && longitude != 0) //지도가 구해진 상태에서 파싱이 끝나면 캡쳐 하면 된다.
                 {
+                    if(result.size() == 0) {
+                        try_count++;
+                        if(try_count < MAX_TRY) {
+                            Log.d("try Parsing", "try Parsing...");
+                            new StartParsing_Ambul().execute();
+                        }
+                        else {
+                            Log.d("don't Parsing", "don't Parsing");
+                            Toast.makeText(getBaseContext(), "현재 공공데이터를 가져올 수 업습니다.", Toast.LENGTH_LONG).show();
+                            try_count = 0;
+                            finish();
+                        }
+                        this.cancel(this.getStatus() == Status.RUNNING); //스레드 죽이기
+                        return;
+                    }
                     Collections.sort(result, compare); // 리스트를 거리순으로 정렬
                     Log.d("result_check", result.size() + "");
                     //화면 이동
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(result.get(0).getLatitude()), Double.parseDouble(result.get(0).getLongitude()))));
                     SystemClock.sleep(4000); //바로 찍으면 지도가 흐릿함.
                     CaptureMapScreen(); //지도 찍기
+
+
                     new SendMessage(MapActivity.this, "mEmerge", getAddress(Double.parseDouble(result.get(0).getLatitude())
                             , Double.parseDouble(result.get(0).getLongitude())), result.get(0).getHospitalName(), null); //문자 보내기
+                    try_count = 0;
                     finish();
                 }
             }
@@ -762,6 +789,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             if(page_id.equals("hospital")) //병원일 때
             {
                 addr = "http://openapi.jeonju.go.kr/rest/medicalnew/getMedicalDistancelList?serviceKey=";
+                //servicekey = "PhfZ9KkQb6y%2FpDBLAL%2B9p2fvX9TbaNmvOxBWBgV33mXzJyEtZCMu0UQSq998%2BoedTo38ANCZvKP2xS1naY8DEQ%3D%3D";
                 servicekey = "z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
                 parameter = "&numOfRows=999&pageSize=100&pageNo=1&startPage=1&posy=" + latitude + "&posx=" + longitude + "&searchDts=10";
                 addr = addr + servicekey + parameter;
