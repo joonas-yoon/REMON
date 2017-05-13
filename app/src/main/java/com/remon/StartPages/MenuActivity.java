@@ -40,7 +40,7 @@ public class MenuActivity extends AppCompatActivity {
             mNotice_text.setEllipsize(TextUtils.TruncateAt.MARQUEE);
             mNotice_text.setSelected(true);
         }
-        else mNotice_text.setText("remon : for emergency use only");
+        else mNotice_text.setText("REMON : for emergency use only");
 
         mbtn_Info.setOnClickListener(new View.OnClickListener() {//사용자 정보
             @Override
