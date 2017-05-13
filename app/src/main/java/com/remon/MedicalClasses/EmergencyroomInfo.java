@@ -1,9 +1,12 @@
 package com.remon.MedicalClasses;
 
-
 import java.io.Serializable;
 
-public class EmergencyroomInfo implements Serializable {
+/**
+ * Created by lg on 2017-05-13.
+ */
+
+public class EmergencyroomInfo  implements Serializable {
 
     private String hospital_name;
     private String addr;
@@ -65,5 +68,4 @@ public class EmergencyroomInfo implements Serializable {
     public String getAcceptPatientRoom() {
         return accept_patient_room;
     }
-
 }

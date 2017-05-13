@@ -49,7 +49,6 @@
                 android:text="Caputre"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onScreenShotButtonClicked"
                 android:id="@+id/screenshot"
                 android:layout_alignBaseline="@+id/address"
                 android:layout_alignBottom="@+id/address"

@@ -6,24 +6,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.remon.StartPages.MenuActivity"
-    android:layout_marginTop="5dp"
+    android:background="#FF5252"
     >
 
     <TextView
-        android:text="TextView"
+        android:text=""
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/message_textView"
-        android:layout_alignParentRight="true"
+        android:textSize="20sp"
+        android:ellipsize="marquee"
+        android:layout_alignParentEnd="true"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
-        android:layout_marginRight="10dp"/>
+        android:layout_marginEnd="10dp"/>
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:weightSum="3"
+        android:background="@drawable/rmenu2"
         android:layout_below="@+id/message_textView">
 
         <LinearLayout
@@ -33,17 +36,17 @@
             android:layout_weight="1">
 
             <Button
-                android:text="Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_info"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
 
             <Button
-                android:text="Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_ambul"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
         </LinearLayout>
 
@@ -54,18 +57,18 @@
             android:layout_weight="1">
 
             <Button
-                android:text="Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_m119"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
 
             <Button
-                android:text="Button"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_med_search"
-                android:layout_weight="1"
-                android:layout_width="match_parent"/>
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_weight="1"/>
         </LinearLayout>
 
         <LinearLayout
@@ -75,17 +78,17 @@
             android:layout_weight="1">
 
             <Button
-                android:text="Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_c119"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
 
             <Button
-                android:text="Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_mEmerg"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1"/>
         </LinearLayout>
     </LinearLayout>

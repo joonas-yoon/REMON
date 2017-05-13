@@ -1,0 +1,31 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:background="#F7F1E6">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/hms"
+        android:id="@+id/imageView3"
+        android:padding="10dp" />
+
+    <Button
+        android:id="@+id/btn_medicalSearch"
+        android:background="?android:attr/selectableItemBackground"
+        android:layout_width="160dp"
+        android:layout_height="190dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:id="@+id/btn_pharmacySearch"
+        android:background="?android:attr/selectableItemBackground"
+        android:layout_width="160dp"
+        android:layout_height="190dp"
+        android:layout_alignBottom="@+id/btn_medicalSearch"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="10dp" />
+
+</RelativeLayout>
