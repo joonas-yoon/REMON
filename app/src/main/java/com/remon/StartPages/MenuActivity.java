@@ -1,11 +1,14 @@
 package com.remon.StartPages;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.remon.MenuSelectedPages.InfoActivity;
 import com.remon.MenuSelectedPages.MapActivity;
@@ -19,6 +22,7 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
+        TextView mNotice_text = (TextView)findViewById(R.id.message_textView);
         Button mbtn_Info = (Button)findViewById(R.id.btn_info); //사용자 정보
         Button mbtn_ambul = (Button)findViewById(R.id.btn_ambul); //응급실 정보
         Button mbtn_m119 = (Button)findViewById(R.id.btn_m119); //119에 문자
@@ -27,11 +31,23 @@ public class MenuActivity extends AppCompatActivity {
         Button mbtn_mEmerg = (Button)findViewById(R.id.btn_mEmerg); //지인 긴급 문자
 
 
+        SharedPreferences pref = getSharedPreferences("pref",0); //name, 0=operating mode
+        String message_text = pref.getString("Message","");
+
+        if(!message_text.equals("")) {
+            mNotice_text.setText(message_text);
+            mNotice_text.setSingleLine(true);
+            mNotice_text.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+            mNotice_text.setSelected(true);
+        }
+        else mNotice_text.setText("remon : for emergency use only");
+
         mbtn_Info.setOnClickListener(new View.OnClickListener() {//사용자 정보
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MenuActivity.this, InfoActivity.class);
                 startActivity(intent);
+                finish();
 
             }
         });
@@ -47,7 +63,7 @@ public class MenuActivity extends AppCompatActivity {
         mbtn_m119.setOnClickListener(new View.OnClickListener() {//119에 문자
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MenuActivity.this, InfoActivity.class);
+                Intent intent = new Intent(MenuActivity.this, MapActivity.class);
                 intent.putExtra("page_id", "m119");
                 startActivity(intent);
             }

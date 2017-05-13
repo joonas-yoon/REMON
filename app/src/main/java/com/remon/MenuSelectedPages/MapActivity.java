@@ -15,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
@@ -43,6 +44,7 @@ import com.remon.ListViewClasses.ListViewAdapter;
 import com.remon.ListViewClasses.ListViewItem;
 import com.remon.MedicalInfo;
 import com.remon.R;
+import com.remon.SendMessage;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -130,7 +132,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                 mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
                 if(page_id.equals("ambul")) //응급실찾기 버튼일 때 리스트 업데이트
                 {
-                    new getAPI().execute(); //background로 parsing
+                    new StartParsing_Ambul().execute(); //background로 parsing
                     edit_search.addTextChangedListener(new TextWatcher() {
                         @Override
                         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -272,11 +274,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
 
-        if(page_id.equals("ambul")) //응급실찾기 버튼일 때 리스트 업데이트
-        {
+        if(page_id.equals("ambul"))
+        {//응급실 찾기는 위치 찾기와 파싱이 동시에 진행되기 때문에 바로 지도에 표시해도 된다.
             if(result_list != null) update_list_Ambul(result_list);
         }
-        
+        else if(page_id.equals("hospital") || page_id.equals("pharmacy"))
+        {//병원과 약국찾기는 위치정보를 가지고 파싱을하기 때문에 위치를 찾고난 뒤에 파싱을 한다.
+            new StartParsing_MedicalSearch().execute(); //background로 API받아오기
+        }
+        else if(page_id.equals("m119"))//119일 경우에는 지도를 캡쳐하고 메세지를 보낸다.
+        {
+            SystemClock.sleep(3000); //바로 찍으면 지도가 흐릿함.
+            CaptureMapScreen(); //지도 찍기
+            new SendMessage(MapActivity.this, "m119", address); //문자 보내기
+            finish();
+        }
+
 
         listview.setOnItemClickListener(new ListViewClickListener());
 
@@ -287,7 +300,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
-
 
     private void CaptureMapScreen() {
         mMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
@@ -302,7 +314,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                     FileOutputStream fileOutputStream;
 
                     if (ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-                    {//권한 있을 때
+                    {
+                        //권한 있을 때
                         try {
                             fileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/Camera/" + fileName);
                             fileOutputStream.write(bytes.toByteArray());
@@ -645,9 +658,61 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    //parsing thread for Ambul
+    private class StartParsing_Ambul extends AsyncTask<Void, Void, ArrayList<EmergencyroomInfo>> {
+        @Override
+        protected ArrayList<EmergencyroomInfo> doInBackground(Void... voids)
+        {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
+            addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEmrrmRltmUsefulSckbdInfoInqire?";
+            servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
+            parameter = add_parameter("STAGE1=%EC%A0%84%EB%9D%BC%EB%B6%81%EB%8F%84");
+            addr = addr + servicekey + parameter;
 
-    //parsing thread
-    private class getAPI2 extends AsyncTask<Void, Void, ArrayList<MedicalInfo>>
+            one_attr_parser("hpid", hpidList);
+            String new_addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEgytBassInfoInqire?";
+            for (int i = 0; i < hpidList.size(); i++) {
+                String p = hpidList.get(i).get("hpid").toString();
+                parameter = add_parameter("HPID=" + p);
+                addr = new_addr + servicekey + parameter;
+                try {
+                    List_parser_Ambul(hospitalList);
+                } catch (Exception e) {
+                    Toast.makeText(MapActivity.this, "파싱 실패", Toast.LENGTH_LONG).show();
+                }
+            }
+            int size = hospitalList.size();
+            ArrayList<EmergencyroomInfo> hospital = new ArrayList<EmergencyroomInfo>();
+            // 0 : 병원이름, 1 : 주소, 2 : 전화번호, 3 : 위도, 4 : 경도, 5 : 응급실, 6 : 입원실, 7 : 수술실
+            for (int i = 0; i < size; i++) {
+                String hospital_name = hospitalList.get(i).get("hpInfo").get(0);
+                String address = hospitalList.get(i).get("hpInfo").get(1);
+                address.replace("&nbsp;", " ");
+                String tel = hospitalList.get(i).get("hpInfo").get(2);
+                String lat = hospitalList.get(i).get("hpInfo").get(3);
+                String lon = hospitalList.get(i).get("hpInfo").get(4);
+                String accept_emer = hospitalList.get(i).get("hpInfo").get(5);
+                String accept_patient = hospitalList.get(i).get("hpInfo").get(6);
+                String accept_oper = "0";
+                if (hospitalList.get(i).get("hpInfo").size() == 8)
+                    accept_oper = hospitalList.get(i).get("hpInfo").get(7);
+                EmergencyroomInfo temp = new EmergencyroomInfo(hospital_name, address, tel, lat, lon, accept_emer, accept_oper, accept_patient);
+                hospital.add(temp);
+            }
+            result_list = hospital;
+            return hospital;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<EmergencyroomInfo> result)
+        {
+            if(latitude!=0 && longitude !=0) update_list_Ambul(result); //지도가 먼저 파싱되면 update
+        }
+
+    }
+
+    //parsing thread for Medical Search
+    private class StartParsing_MedicalSearch extends AsyncTask<Void, Void, ArrayList<MedicalInfo>>
     {
         @Override
         protected ArrayList<MedicalInfo> doInBackground(Void... voids)
@@ -730,58 +795,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(ArrayList<MedicalInfo> result) {
             if(latitude!=0 && longitude !=0) update_list_MedicalSearch(result);
         }
-    }
-    //parsing thread
-    private class getAPI extends AsyncTask<Void, Void, ArrayList<EmergencyroomInfo>> {
-        @Override
-        protected ArrayList<EmergencyroomInfo> doInBackground(Void... voids)
-        {
-            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
-            addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEmrrmRltmUsefulSckbdInfoInqire?";
-            servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
-            parameter = add_parameter("STAGE1=%EC%A0%84%EB%9D%BC%EB%B6%81%EB%8F%84");
-            addr = addr + servicekey + parameter;
-
-            one_attr_parser("hpid", hpidList);
-            String new_addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEgytBassInfoInqire?";
-            for (int i = 0; i < hpidList.size(); i++) {
-                String p = hpidList.get(i).get("hpid").toString();
-                parameter = add_parameter("HPID=" + p);
-                addr = new_addr + servicekey + parameter;
-                try {
-                    List_parser_Ambul(hospitalList);
-                } catch (Exception e) {
-                    Toast.makeText(MapActivity.this, "파싱 실패", Toast.LENGTH_LONG).show();
-                }
-            }
-            int size = hospitalList.size();
-            ArrayList<EmergencyroomInfo> hospital = new ArrayList<EmergencyroomInfo>();
-            // 0 : 병원이름, 1 : 주소, 2 : 전화번호, 3 : 위도, 4 : 경도, 5 : 응급실, 6 : 입원실, 7 : 수술실
-            for (int i = 0; i < size; i++) {
-                String hospital_name = hospitalList.get(i).get("hpInfo").get(0);
-                String address = hospitalList.get(i).get("hpInfo").get(1);
-                address.replace("&nbsp;", " ");
-                String tel = hospitalList.get(i).get("hpInfo").get(2);
-                String lat = hospitalList.get(i).get("hpInfo").get(3);
-                String lon = hospitalList.get(i).get("hpInfo").get(4);
-                String accept_emer = hospitalList.get(i).get("hpInfo").get(5);
-                String accept_patient = hospitalList.get(i).get("hpInfo").get(6);
-                String accept_oper = "0";
-                if (hospitalList.get(i).get("hpInfo").size() == 8)
-                    accept_oper = hospitalList.get(i).get("hpInfo").get(7);
-                EmergencyroomInfo temp = new EmergencyroomInfo(hospital_name, address, tel, lat, lon, accept_emer, accept_oper, accept_patient);
-                hospital.add(temp);
-            }
-            result_list = hospital;
-            return hospital;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<EmergencyroomInfo> result)
-        {
-            if(latitude!=0 && longitude !=0) update_list_Ambul(result); //지도가 먼저 파싱되면 update
-        }
-
     }
 }
 

@@ -6,10 +6,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -24,11 +27,18 @@ import android.widget.Toast;
 import com.remon.R;
 import com.remon.StartPages.MenuActivity;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+
 import static com.remon.R.id.blood_spinner;
 
 public class InfoActivity extends AppCompatActivity {
     //사용자 정보
     ImageButton pict_btn;
+    Bitmap profilePict;
+    String fileName = "Profile.jpg";
+
     EditText editName,editAge,editDisease,editPhone1,editPhone2,editMedicine, editmessage;
     Spinner mBlood_Spinner, mRelation1_Spinner, mRelation2_Spinner;
     String editNameString,editAgeString,bloodString,notString;
@@ -53,6 +63,7 @@ public class InfoActivity extends AppCompatActivity {
 
         //text & sinner & image & button 연결
         pict_btn = (ImageButton)findViewById(R.id.pictureButton);
+
 
         editName = (EditText)findViewById(R.id.editName);
         editAge = (EditText)findViewById(R.id.editAge);
@@ -94,6 +105,13 @@ public class InfoActivity extends AppCompatActivity {
         mBlood_Spinner.setSelection(bloodspinner_index);
         mRelation1_Spinner.setSelection(relation1spinner_index);
         mRelation2_Spinner.setSelection(relation2spinner_index);
+        try {
+            Uri uri = FileProvider.getUriForFile(InfoActivity.this, "com.remon.fileprovider",
+                    new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/Camera/" + fileName));
+            pict_btn.setImageURI(uri);
+        } catch(Exception e) {
+            Log.d("FileStreamError", e.getMessage());
+        }
 
 
         //blood_spinner setting
@@ -144,11 +162,12 @@ public class InfoActivity extends AppCompatActivity {
         pict_btn.setOnClickListener(new View.OnClickListener() {    // 사진추가 버튼 리스너
             @Override
             public void onClick(View view) {
-                if(ContextCompat.checkSelfPermission(InfoActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED) {
+                if(ContextCompat.checkSelfPermission(InfoActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED)
+                {//권한 없으면 물어보기
                     ActivityCompat.requestPermissions(InfoActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_EXTERNAL_STORAGE);
                 }
                 else
-                {
+                {//권한 있을 때, 사진 고르기
                     Intent intent = new Intent(Intent.ACTION_PICK);
                     intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
                     intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -201,7 +220,7 @@ public class InfoActivity extends AppCompatActivity {
             startActivityForResult(intent, REQ_CODE_SELECT_IMAGE);
         }
         else //permission 거부 했을 때
-            Toast.makeText(InfoActivity.this, "ACCESS DENIED", Toast.LENGTH_LONG).show(); //Don't access EXTERNAL_STORAGE
+            Toast.makeText(InfoActivity.this, "PERMISSION DENIED", Toast.LENGTH_LONG).show(); //Don't access EXTERNAL_STORAGE
 
     }
     @Override
@@ -229,6 +248,27 @@ public class InfoActivity extends AppCompatActivity {
         editor.putString("Message", editmessage.getText().toString());
 
         editor.putString("blood", mBlood); //나중에 메세지에 포함시키기 위해서
+
+        //프로필 사진 저장
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            profilePict.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+
+            FileOutputStream fileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/Camera/" + fileName);
+            fileOutputStream.write(byteArrayOutputStream.toByteArray());
+            fileOutputStream.close();
+
+            //갤러리 새로고침
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/Camera/" + fileName);
+            Uri uri = Uri.fromFile(f);
+            mediaScanIntent.setData(uri);
+            getApplicationContext().sendBroadcast(mediaScanIntent);
+        } catch(Exception e)
+        {
+            Log.d("FileStreamError", e.getMessage());
+        }
+
         editor.apply();
     }
 
@@ -241,6 +281,7 @@ public class InfoActivity extends AppCompatActivity {
                 try {
                     Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
                     pict_btn.setImageBitmap(bitmap);
+                    profilePict=bitmap;
                 } catch (Exception e) {
                     Toast.makeText(getBaseContext(), "파일을 불러올 수 없습니다.", Toast.LENGTH_LONG).show();
                     Log.d("Image_load_error", e.getMessage());
