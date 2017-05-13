@@ -12,15 +12,19 @@ import android.support.annotation.IntDef;
 
 public class LockScreenService extends Service {
 
-    BroadcastReceiver receiver = new LockScreenReceiver();
+    BroadcastReceiver receiver = null;
 
     @Override
     public void onCreate() {
-        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-        KeyguardManager.KeyguardLock keyLock = km.newKeyguardLock(Context.KEYGUARD_SERVICE);
+        super.onCreate();
 
-        // 기본 잠금화면 없애기
-        keyLock.disableKeyguard();
+        KeyguardManager km = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+        KeyguardManager.KeyguardLock key;
+
+        //This is deprecated, but it is a simple way to disable the lockscreen in code
+        key = km.newKeyguardLock("IN");
+
+        key.disableKeyguard();
 
         //Start listening for the Screen On, Screen Off, and Boot completed actions
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
@@ -28,9 +32,29 @@ public class LockScreenService extends Service {
         filter.addAction(Intent.ACTION_BOOT_COMPLETED);
 
         //Set up a receiver to listen for the Intents in this Service
+        receiver = new LockScreenReceiver();
         registerReceiver(receiver, filter);
+    }
 
-        super.onCreate();
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+
+        // 죽지 않는 잠금화면을 위한 Notification.
+        Notification notification = new Notification();
+        startForeground(1, notification);
+
+        if (intent != null) {
+            if (intent.getAction() == null) {
+                if (receiver == null) {
+                    receiver = new LockScreenReceiver();
+                    IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+                    registerReceiver(receiver, filter);
+                }
+            }
+        }
+
+        return START_REDELIVER_INTENT;
     }
 
     @Override
@@ -40,7 +64,10 @@ public class LockScreenService extends Service {
 
     @Override
     public void onDestroy() {
-        unregisterReceiver(receiver);
         super.onDestroy();
+
+        if(receiver != null) {
+            unregisterReceiver(receiver);
+        }
     }
 }
