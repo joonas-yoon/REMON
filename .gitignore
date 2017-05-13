@@ -41,3 +41,6 @@ captures/
 
 # For Sync Project with Gradle
 .idea/
+
+build.gradle
+gradle/
