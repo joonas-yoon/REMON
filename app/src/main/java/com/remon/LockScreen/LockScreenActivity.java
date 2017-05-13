@@ -12,6 +12,7 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextClock;
 
+import com.remon.MenuSelectedPages.MapActivity;
 import com.remon.R;
 import com.remon.StartPages.MenuActivity;
 
@@ -144,9 +145,10 @@ public class LockScreenActivity extends AppCompatActivity {
     }
 
     public void runApplication(){
-        // TODO: API level 16
-        Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
+        Intent intent = new Intent(getApplicationContext(), MapActivity.class);
+        intent.putExtra("page_id", "m119");
         startActivity(intent);
+        finish();
     }
 
 

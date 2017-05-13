@@ -752,8 +752,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(result.get(0).getLatitude()), Double.parseDouble(result.get(0).getLongitude()))));
                     SystemClock.sleep(4000); //바로 찍으면 지도가 흐릿함.
                     CaptureMapScreen(); //지도 찍기
-                    new SendMessage(MapActivity.this, "mEmerge", getAddress(Double.parseDouble(result.get(0).getLatitude())
-                            ,Double.parseDouble(result.get(0).getLongitude())), result.get(0).getHospitalName(),null); //문자 보내기
+                    new SendMessage(
+                            MapActivity.this, "mEmerge",
+                            getAddress(
+                                    Double.parseDouble(result.get(0).getLatitude()),
+                                    Double.parseDouble(result.get(0).getLongitude())
+                            ),
+                            result.get(0).getHospitalName(),
+                            result
+                    ); //문자 보내기
                     finish();
                 }
             }
