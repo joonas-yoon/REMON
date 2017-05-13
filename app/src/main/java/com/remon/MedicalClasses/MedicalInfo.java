@@ -2,6 +2,10 @@ package com.remon.MedicalClasses;
 
 import java.io.Serializable;
 
+/**
+ * Created by lg on 2017-05-13.
+ */
+
 public class MedicalInfo implements Serializable {
 
     private String medical_name;

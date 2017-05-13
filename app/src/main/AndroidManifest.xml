@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.remon">
+          package="com.remon">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -17,7 +17,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/emergencykit"
         android:label="@string/app_name"
         android:screenOrientation="portrait"
         android:supportsRtl="true"
@@ -28,7 +28,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"/>
 
-        <activity android:name=".StartPages.MenuActivity">
+        <activity android:name=".StartPages.StartLoadingActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -36,13 +36,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".MenuSelectedPages.InfoActivity"
-                  android:windowSoftInputMode="stateAlwaysHidden">
-        </activity>
-        <activity android:name=".MenuSelectedPages.Medical_SearchActivity">
-        </activity>
+                  android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:name=".StartPages.MenuActivity"/>
+        <activity android:name=".MenuSelectedPages.Medical_SearchActivity"/>
         <activity android:name=".MenuSelectedPages.MapActivity"
-                  android:windowSoftInputMode="stateAlwaysHidden">
-        </activity>
+                  android:windowSoftInputMode="stateAlwaysHidden"/>
+
+        <activity android:name=".LockScreen.LockScreenActivity" />
 
         <receiver
             android:name=".LockScreen.LockScreenReceiver"
@@ -56,7 +56,16 @@
             android:name=".LockScreen.LockScreenService"
             android:enabled="true" />
 
-        <activity android:name=".LockScreen.LockScreenActivity" />
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.remon.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
 </manifest>

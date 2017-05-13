@@ -96,14 +96,8 @@ public class Parser {
         try {
             parser = f.newDocumentBuilder();
         } catch(ParserConfigurationException e) {
-            Log.d("parsing_error_catch3", e.getMessage());
             e.printStackTrace();
         }
-        Log.d("parsing_error_catch5", latitude+"/"+longitude);
-        //addr = "http://openapi.jeonju.go.kr/rest/medicalnew/getMedicalDistancelList?serviceKey=";
-        //servicekey = "z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
-        //parameter = "&numOfRows=999&pageSize=100&pageNo=1&startPage=1&posy=" + 35.844385 + "&posx=" + 127.137730 + "&searchDts=15";
-        //addr = addr + servicekey + parameter;
 
         Document xmlDoc = null;
         try {
@@ -140,7 +134,6 @@ public class Parser {
             }
         } catch(Exception e) {
             Log.d("parsing_checking2", e.getMessage());
-            //Toast.makeText(getBaseContext(), e+"", Toast.LENGTH_LONG).show();
         }
     }
 
