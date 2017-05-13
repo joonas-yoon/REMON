@@ -157,6 +157,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
                 }
+                else if(page_id.equals("mEmerge") || page_id.equals("m119"))
+                {
+                    new StartParsing_Ambul().execute(); //background로 parsing
+                }
             }
             else //gps 안켜졌을 경우
             {
@@ -167,6 +171,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         else
         {//permission 없을 경우
             check_GPS_Permission();
+        }
+
+        if(ContextCompat.checkSelfPermission(MapActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED)
+        {//권한 없으면 물어보기
+            ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_EXTERNAL_STORAGE2);
         }
 
     } //onCreate
@@ -282,7 +291,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-
         if(page_id.equals("ambul"))
         {//응급실 찾기는 위치 찾기와 파싱이 동시에 진행되기 때문에 바로 지도에 표시해도 된다.
             if(result_list != null) update_list_Ambul(result_list);
@@ -290,17 +298,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         else if(page_id.equals("hospital") || page_id.equals("pharmacy"))
         {//병원과 약국찾기는 위치정보를 가지고 파싱을하기 때문에 위치를 찾고난 뒤에 파싱을 한다.
             new StartParsing_MedicalSearch().execute(); //background로 API받아오기
-        }
-        else if(page_id.equals("m119"))//119일 경우에는 지도를 캡쳐하고 메세지를 보낸다.
-        {
-            if(ContextCompat.checkSelfPermission(MapActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED)
-            {//권한 없으면 물어보기
-                ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_EXTERNAL_STORAGE2);
-            }
-            SystemClock.sleep(3000); //바로 찍으면 지도가 흐릿함.
-            CaptureMapScreen(); //지도 찍기
-            new SendMessage(MapActivity.this, "m119", address); //문자 보내기
-            finish();
         }
 
         listview.setOnItemClickListener(new ListViewClickListener());
@@ -563,7 +560,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
 
                 HashMap<String, ArrayList<String>> parseTest = new HashMap<String, ArrayList<String>>();
                 ArrayList<String> strList = new ArrayList<String>();
-                Log.d("parsing_checking21", name.getTextContent()+"");
                 strList.add(name.getTextContent()+"");
                 strList.add(address.getTextContent()+"");
                 strList.add(tel.getTextContent()+"");
@@ -581,7 +577,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void update_list_Ambul(ArrayList<EmergencyroomInfo> list_data)
     {
-        //ArrayList<EmergencyroomInfo> list = list_data;
         if(list_data!=null)
         {
             int size = list_data.size();
@@ -622,11 +617,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         {
             Log.d("list_not_shown", "not");
         }
-
-            /*
-            else if(page_id.equals("hospital") || page_id.equals("pharmacy")) {
-            }*/
-
     }
 
     public void update_list_MedicalSearch(ArrayList<MedicalInfo> list_data)
@@ -717,9 +707,58 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(ArrayList<EmergencyroomInfo> result)
         {
-            if(latitude!=0 && longitude !=0) update_list_Ambul(result); //지도가 먼저 파싱되면 update
-        }
+            if(page_id.equals("ambul"))
+            {
+                if(latitude!=0 && longitude !=0) update_list_Ambul(result); //지도가 먼저 파싱되면 update
+            }
+            else if(page_id.equals("m119"))//119일 경우에는 지도를 캡쳐하고 메세지를 보낸다.
+            {
+                if(latitude!=0 && longitude !=0)
+                {
+                    if (ContextCompat.checkSelfPermission(MapActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {//권한 없으면 물어보기
+                        ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_EXTERNAL_STORAGE2);
+                    }
 
+                    int size = result.size();
+                    for (int i = 0; i < size; i++) {
+                        double lat = Double.parseDouble(result.get(i).getLatitude());
+                        double lon = Double.parseDouble(result.get(i).getLongitude());
+                        LatLng point = new LatLng(lat, lon);
+                        result.get(i).setDistance(CalculationByDistance(new LatLng(latitude, longitude), point));
+                    }
+                    Collections.sort(result, compare); // 리스트를 거리순으로 정렬
+
+                    SystemClock.sleep(4000); //바로 찍으면 지도가 흐릿함.
+
+                    CaptureMapScreen(); //지도 찍기
+                    new SendMessage(MapActivity.this, "m119", getAddress(latitude, longitude), "", result); //문자 보내기
+                    finish();
+                }
+            }
+
+            else if(page_id.equals("mEmerge"))
+            {
+                if(latitude!=0 && longitude !=0) //지도가 구해진 상태에서 파싱이 끝나면 캡쳐 하면 된다.
+                {
+                    int size = result.size();
+                    for (int i = 0; i < size; i++) {
+                        double lat = Double.parseDouble(result.get(i).getLatitude());
+                        double lon = Double.parseDouble(result.get(i).getLongitude());
+                        LatLng point = new LatLng(lat, lon);
+                        result.get(i).setDistance(CalculationByDistance(new LatLng(latitude, longitude), point));
+                    }
+                    Collections.sort(result, compare); // 리스트를 거리순으로 정렬
+                    //화면 이동
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(result.get(0).getLatitude()), Double.parseDouble(result.get(0).getLongitude()))));
+                    SystemClock.sleep(4000); //바로 찍으면 지도가 흐릿함.
+                    CaptureMapScreen(); //지도 찍기
+                    new SendMessage(MapActivity.this, "mEmerge", getAddress(Double.parseDouble(result.get(0).getLatitude())
+                            ,Double.parseDouble(result.get(0).getLongitude())), result.get(0).getHospitalName(),null); //문자 보내기
+                    finish();
+                }
+            }
+
+        }
     }
 
     //parsing thread for Medical Search
