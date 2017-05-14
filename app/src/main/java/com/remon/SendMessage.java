@@ -65,7 +65,7 @@ public class SendMessage {
 
         if(message_type.compareTo("m119")==0)
         { //119신고일 경우
-            intent.putExtra("address", "119");
+            intent.putExtra("address", "여기는119");
             String message = "[환자의 정보]\n" +
                     "\n이름 : " + mName + "\n" +
                     "\n나이 : " + mAge + "\n" +

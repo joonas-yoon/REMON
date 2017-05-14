@@ -161,10 +161,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
                 }
-                /*else if(page_id.equals("mEmerge") || page_id.equals("m119"))
-                {
-                    new StartParsing_Ambul().execute(); //background로 parsing
-                }*/
+
             }
             else //gps 안켜졌을 경우
             {
@@ -609,7 +606,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                 String accept_patient_room = list_data.get(i).getAcceptPatientRoom();
 
                 int ck_emer = Integer.parseInt(accept_emergency_room);
+
+                //if (ck_emer < 0) continue;
+
+
                 String emergency_room_state = ck_emer > 0 ? "응급실 가능" : "응급실 불가";
+
                 int ck_oper = Integer.parseInt(accept_operation_room);
                 String operation_room_state = ck_oper > 0 ? "수술실 가능" : "수술실 불가";
                 int ck_patient = Integer.parseInt(accept_patient_room);
@@ -679,8 +681,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
             addr = "http://openapi.e-gen.or.kr/openapi/service/rest/ErmctInfoInqireService/getEmrrmRltmUsefulSckbdInfoInqire?";
 
-            servicekey = "serviceKey=PhfZ9KkQb6y%2FpDBLAL%2B9p2fvX9TbaNmvOxBWBgV33mXzJyEtZCMu0UQSq998%2BoedTo38ANCZvKP2xS1naY8DEQ%3D%3D";
-            //servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
+            //servicekey = "serviceKey=PhfZ9KkQb6y%2FpDBLAL%2B9p2fvX9TbaNmvOxBWBgV33mXzJyEtZCMu0UQSq998%2BoedTo38ANCZvKP2xS1naY8DEQ%3D%3D";
+            servicekey = "serviceKey=z%2BUi3qnnemU8I3aokp%2Fk%2FVYt3kg4r7Zi8KAb%2BxI%2BlfDwhTnsQsekuGpOEtzgD4qOxOIaxZGLo%2Bh%2BuJ%2FPD4bvGA%3D%3D";
             parameter = add_parameter("STAGE1=%EC%A0%84%EB%9D%BC%EB%B6%81%EB%8F%84");
             addr = addr + servicekey + parameter;
 
@@ -714,9 +716,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback
                 EmergencyroomInfo temp = new EmergencyroomInfo(hospital_name, address, tel, lat, lon, accept_emer, accept_oper, accept_patient);
                 double targetLat = Double.parseDouble(lat);
                 double targetLon = Double.parseDouble(lon);
+
+                if( (Integer.parseInt(accept_emer) < 0)) {
+                    continue;
+                }
+
                 temp.setDistance(CalculationByDistance(new LatLng(latitude, longitude), new LatLng(targetLat, targetLon)));
                 hospital.add(temp);
             }
+
+            Log.d("hospital_size", hospital.size()+"");
             result_list = hospital;
             return hospital;
         }
